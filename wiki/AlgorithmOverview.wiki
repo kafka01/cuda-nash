@@ -47,7 +47,7 @@ Imagine that we write out the description of the game as a vector.
 
 We could write out the congestion game from before as:
 
-`{{{1,1},{2,2}},{{1,2},{1, 0.5}},{{2,1},{0,5, 1}}, {{2,2},{1,1}}} `
+`{{{1,1},{2,2}},{{1,2},{1, 0.5}},{{2,1},{0.5, 1}}, {{2,2},{1,1}}} `
 
 Where each element of the top level vector represents one of possible outcomes of the game. Within each top level element in another vector. For instance the first element is 
 {{1,1},{2,2}}
@@ -88,10 +88,47 @@ Now when we call this function we have to tell the graphics card how many thread
 int main()
 {
    ...
-   dim3 dimBlock (4);
-   dim3 dimGrid(256);
+   dim3 dimBlock (256);
+   dim3 dimGrid(4);
    VecAddition<<<dimGrid, dimBlock>>>(vec1,vec2,result);
 
 
 }
 }}}
+
+The operator <<< Num blocks, Num threads per block>>> lets the complier know that you want to call the function on the graphics card hardware with the specified block and thread configuration. There are, however, quite a few memory allocation issues that are being glossed over because they aren't central to the algorithm. 
+
+==Using CUDA to solve for Nash equilibrium==
+
+My first thought is to operate on the game vector. That is to assign a thread to each element of the game vector thus needing N*M threads for the function call.
+
+The first step of the algorithm is extract the payoffs for each of the N*M game outcomes for a particular player. We start with player 1.
+
+{{{
+_global_ ExpectedPay(GameType * game, float ** guess, float * pay1,int N, int M)
+{
+  int i=0;
+  int j=0;
+  int idx = blockDim.x * blockIdx.x + threadIdx.x;
+   for(i=0; i<N; i++)
+   {
+      for(j=0; j<m; j++)
+      {
+         If(game[idx][1][i]==j)
+            pay1[idx]= pay1[idx]*guess[i][j];
+      {
+
+   }
+
+}
+}}}
+
+What I believe this function will do is set the vector pay 1 to be the building blocks needed for calculating each of the differential equations. So for our example game, if each player has an initial guess of playing each strategy 50% of the time then we will have:
+
+initial pay1= {2,1,0.5,1}
+
+After the function ExpectedPay
+
+pay1 = {1, 0.5, 0.25, .5}
+
+To determine the expected payoff for playing each pure strategy we need to determine which elements in the vector pay1 are associated with the same strategy and then take a parallel sum. I believe that Nvidia has ported the BLAS library over to CUDA so I won't try and determine the best way to do a parallel sum here. 
