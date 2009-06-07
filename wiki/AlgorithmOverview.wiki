@@ -33,3 +33,41 @@ So the general idea is that the change is the probability of playing a strategy 
 (The current probability of playing the strategy) Times  ((the expected utility of playing the strategy) Minus (the average utility over all strategies)).
 
 Because probabilities must sum to one, including P2 and Q2 are redundant. However, from a computational standpoint, worrying about doing the substitution Qn= (1-Sum(Qi to Q(n-1)) could be more trouble than including it.
+
+
+
+= Computational strategies =
+There are several potential approaches to trying to parralize the computation of this set of differential equations. The Single Instruction Multiple Data (SIMD) architecture of graphics cards makes algorithms that rely on vector operations easy to implement via CUDA. Also, algorithms that require a lot of branching and logical checks seem to be less likely to benefit from this type of parallel architecture. 
+
+==Idea #1==
+Good data structures will make vector operations easier to code. 
+
+Data structure #1
+Imagine that we write out the description of the game as a vector. 
+
+We could write out the congestion game from before as:
+
+`{{{1,1},{2,2}},{{1,2},{1, 0.5}},{{2,1},{0,5, 1}}, {{2,2},{1,1}}} `
+
+Where each element of the top level vector represents one of possible outcomes of the game. Within each top level element in another vector. For instance the first element is 
+{{1,1},{2,2}}
+which has two sub vectors. The first of these sub-vectors denotes the strategies played be each of the players for that outcome of the game. In this case both players took the first road. The next of these sub-vectors denotes the payoffs to each players from this outcome of the game. I think this is a sensible way to represent the game, but am not sure about how much of a pain it would be to pass a data structure like this in CUDA to the graphics card.
+
+Data structure #2
+Suppose there are N-players each with M strategies. Lets create an NXM matrix where the element [i,j] denotes that probability that player i plays strategy j. 
+
+The key step in this algorithm is calculating the expected payoff from following each strategy for each player. 
+
+Inputs 
+   # variable game: data structure #1 (a vector of length N*M)
+   # variable guess: an initial guess for the Nash equilibrium (an NXM matrix described in data structure #2)
+
+Outputs
+   # an updated guess for the Nash equilibrium, updated according to the differential equations described above.
+
+An important concept in CUDA is that when you write a function, you can call it across a large number of threads at a time. Each thread performs the same operation on a different element of a vector. So here the vector we care about is described in the variable game. 
+
+{{{
+For[ 
+
+}}}
