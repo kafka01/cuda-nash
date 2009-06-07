@@ -65,9 +65,33 @@ Inputs
 Outputs
    # an updated guess for the Nash equilibrium, updated according to the differential equations described above.
 
-An important concept in CUDA is that when you write a function, you can call it across a large number of threads at a time. Each thread performs the same operation on a different element of a vector. So here the vector we care about is described in the variable game. 
+==Detour into CUDA details==
+
+An important concept in CUDA is that when you write a function, you can call it across a large number of blocks with each block containing a fixed number of threads. Each thread performs the same operation on a different element of a vector. So here the vector we care about is described in the variable game. Each thread has access to several variables global variables that help in determining which element it is to operate on. The variables are: 
+   # blockDim.x which gives the number of threads in each block
+   # blockIdx.x which tells which block the thread is in
+   # threadIdx.x which tells the thread what its ID number is within the block.
+
+So lets say we want to calculate the addition of two large vectors using CUDA. Each vector is 1024 elements long. First we define a function:
 
 {{{
-For[ 
+_global_ VecAddition(float* vec1, float * vec2, float * result)
+{
+   int idx = blockDim.x * blockIdx.x + threadIdx.x;
+   results[idx]=vec1[idx]+vec2[idx]
+}  
+}}}
 
+Now when we call this function we have to tell the graphics card how many threads per block and how many blocks we want to execute the function over.
+
+{{{
+int main()
+{
+   ...
+   dim3 dimBlock (4);
+   dim3 dimGrid(256);
+   VecAddition<<<dimGrid, dimBlock>>>(vec1,vec2,result);
+
+
+}
 }}}
