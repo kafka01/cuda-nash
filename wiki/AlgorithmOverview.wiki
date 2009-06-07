@@ -1,0 +1,31 @@
+= Introduction =
+
+The idea for this algorithm is simple. The idea is to imagine that individuals pick a strategy profile (the percentage of the time that they will play each of their pure strategies). After playing it for a fixed amount of time they reevaluate their decision. Pure strategies that had an expected payoff lower than the average payoff experienced they will play less in the future. Pure strategies that did better than average they play more often. Now if you imagine that players can do these sorts of calculations in an instantaneous fashion, this logic can be used to setup each players adaptive rule as a system of differential equations. The solution to which, when it converges, will converge to a Nash equilibrium. One case when the system of differential equations will not converge is when there is only a single mixed strategy Nash equilibrium. In this case the system will cycle around the equilibrium, with the equilibrium at its center. That the equilibrium is at the center of the cycle can be used to find the equilibrium when the systems do not converge. 
+
+==The Math==
+
+Consider the congestion game shown below in normal form. There are 2 players, each of which has two routes they can take.
+
+*Payoffs*
+
+|| || Road 1 || Road 2||
+|| Road 1|| {2,2} || {1, 0.5}||
+|| Road 2|| {0.5, 1}|| {1,1}|| 
+
+Let's assign some variables to the probability that each player chooses each road. 
+
+Let P1 be the probability that player 1 chooses road 1. 
+Let P2 be the probability that player 1 chooses road 2. 
+Let Q1 be the probability that player 2 chooses road 1.
+Let Q2 be the probability that player 2 chooses road 2.
+
+dP1/dt = P1((2*Q1+1*Q2) - (P1(2*Q1+1*Q2)+P2(0.5*Q1+1*Q2)))
+dP2/dt = P2((0.5*Q1+1*Q2) - (P1(2*Q1+1*Q2)+P2(0.5*Q1+1*Q2)))
+dQ1/dt = Q1((2*P1+1*P2) - (Q1(2*P1+1*P2)+Q2(P1*0.5+P2*1)))
+dQ2/dt = Q1((P1*0.5+P2*1) - (Q1(2*P1+1*P2)+Q2(P1*0.5+P2*1)))
+
+So the general idea is that the change is the probability of playing a strategy is:
+
+(The current probability of playing the strategy) Times  ((the expected utility of playing the strategy) Minus (the average utility over all strategies)).
+
+Because probabilities must sum to one, including P2 and Q2 are redundant. However, from a computational standpoint, worrying about doing the substitution Qn= (1-Sum(Qi to Q(n-1)) could be more trouble than including it.
