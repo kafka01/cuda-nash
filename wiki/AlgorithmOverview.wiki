@@ -75,7 +75,7 @@ An important concept in CUDA is that when you write a function, you can call it 
 So lets say we want to calculate the addition of two large vectors using CUDA. Each vector is 1024 elements long. First we define a function:
 
 {{{
-_global_ VecAddition(float* vec1, float * vec2, float * result)
+_global_ void VecAddition(float* vec1, float * vec2, float * result)
 {
    int idx = blockDim.x * blockIdx.x + threadIdx.x;
    results[idx]=vec1[idx]+vec2[idx]
@@ -105,7 +105,7 @@ My first thought is to operate on the game vector. That is to assign a thread to
 The first step of the algorithm is extract the payoffs for each of the N*M game outcomes for a particular player. We start with player 1.
 
 {{{
-_global_ ExpectedPay(GameType * game, float ** guess, float * pay1,int N, int M)
+_global_ void ExpectedPay(GameType * game, float ** guess, float * pay1,int N, int M)
 {
   int i=0;
   int j=0;
